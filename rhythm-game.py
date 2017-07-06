@@ -14,8 +14,8 @@ playerHeight = 20
 playerWidth = 4
 playerOffset = 50
 
-def drawPlayer(lineNumber):
-    y = (yOffset-(playerHeight/2)) + (lineOffset * lineNumber)
+def drawPlayer():
+    y = (yOffset-(playerHeight/2)) + (lineOffset * playerPosition)
     pygame.draw.rect(screen, (255,0,0), pygame.Rect((playerOffset-(playerWidth/2)),y,playerWidth,playerHeight))
 
 objects = [
@@ -40,7 +40,6 @@ def updateObjects():
             y = (yOffset-(playerHeight/2)) + (lineOffset * object[1])
             pygame.draw.rect(screen, colors[object[1]], pygame.Rect(object[0],y,playerHeight,playerHeight))
     else:
-        print "no objects"
         objects.append([750,randrange(0, 4, 1)])
 
 # The actual game
@@ -58,7 +57,7 @@ while not done:
     clock.tick(60)
     screen.fill((0,0,0))
     drawLines()
-    drawPlayer(playerPosition)
+    drawPlayer()
     updateObjects()
     pygame.display.flip()
     for event in pygame.event.get():
