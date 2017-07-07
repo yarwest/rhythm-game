@@ -28,10 +28,16 @@ colors = [
     (255,255,0)
 ]
 
+deltaTime = 0
+timeThreshold = 5
+
 def updateObjects():
+    global deltaTime
     if objects:
         for object in objects:
-            object[0] = object[0]-3
+            if deltaTime >= timeThreshold:
+                object[0] -= 1
+                deltaTime -= timeThreshold
             if object[0] <= playerOffset:
                 if playerPosition == object[1]:
                     objects.remove(object)
@@ -54,7 +60,7 @@ clock = pygame.time.Clock()
 done = False
 
 while not done:
-    clock.tick(60)
+    deltaTime += clock.tick()
     screen.fill((0,0,0))
     drawLines()
     drawPlayer()
