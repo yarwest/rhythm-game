@@ -28,11 +28,11 @@ colors = [
     (255,255,0)
 ]
 
-deltaTime = 0
 timeThreshold = 5
 
 def updateObjects():
     global deltaTime
+    global score
     if objects:
         for object in objects:
             if deltaTime >= timeThreshold:
@@ -40,13 +40,19 @@ def updateObjects():
                 deltaTime -= timeThreshold
             if object[0] <= playerOffset:
                 if playerPosition == object[1]:
+                    ++score
                     objects.remove(object)
             elif object[0] <= 0:
                 print "game over"
             y = (yOffset-(playerHeight/2)) + (lineOffset * object[1])
             pygame.draw.rect(screen, colors[object[1]], pygame.Rect(object[0],y,playerHeight,playerHeight))
     else:
-        objects.append([750,randrange(0, 4, 1)])
+        objects.append([750,randrange(0, linesNo, 1)])
+
+def drawScore():
+    print score
+    scoreText=font.render(score, 1,(255,0,0))
+    screen.blit(scoreText, (350, 100))
 
 # The actual game
 import pygame
@@ -55,7 +61,10 @@ pygame.init()
 screen = pygame.display.set_mode((750,500)#, pygame.FULLSCREEN, 16
     )
 
+font=pygame.font.Font(None,30)
 playerPosition = 0
+deltaTime = 0
+score = 0
 clock = pygame.time.Clock()
 done = False
 
@@ -65,6 +74,7 @@ while not done:
     drawLines()
     drawPlayer()
     updateObjects()
+    drawScore()
     pygame.display.flip()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -78,7 +88,6 @@ while not done:
                 playerPosition = 2
             elif event.key == pygame.K_DOWN:
                 playerPosition = 3
-        pygame.display.flip()
 
 pygame.display.quit()
 pygame.quit()
