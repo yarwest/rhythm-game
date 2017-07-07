@@ -34,23 +34,29 @@ def updateObjects():
     global deltaTime
     global score
     if objects:
-        for object in objects:
-            if deltaTime >= timeThreshold:
+        while deltaTime >= timeThreshold:
+            for object in objects:
                 object[0] -= 1
-                deltaTime -= timeThreshold
-            if object[0] <= playerOffset:
-                if playerPosition == object[1]:
-                    score += 1
+                if object[0] <= playerOffset:
+                    if playerPosition == object[1]:
+                        score += 1
+                        objects.remove(object)
+                if object[0] <= 0:
+                    print "game over"
                     objects.remove(object)
-            elif object[0] <= 0:
-                print "game over"
+            deltaTime -= timeThreshold
+        for object in objects:
             y = (yOffset-(playerHeight/2)) + (lineOffset * object[1])
             pygame.draw.rect(screen, colors[object[1]], pygame.Rect(object[0],y,playerHeight,playerHeight))
     else:
-        objects.append([750,randrange(0, linesNo, 1)])
+        objects.extend((
+            [750,randrange(0, linesNo, 1)],
+            [850,randrange(0, linesNo, 1)],
+            [950,randrange(0, linesNo, 1)],
+            [1050,randrange(0, linesNo, 1)]
+        ))
 
 def drawScore():
-    print score
     scoreText=font.render(str(score), 1,(255,0,0))
     screen.blit(scoreText, (350, 100))
 
