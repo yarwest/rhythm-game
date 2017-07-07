@@ -40,7 +40,7 @@ def updateObjects():
                 deltaTime -= timeThreshold
             if object[0] <= playerOffset:
                 if playerPosition == object[1]:
-                    ++score
+                    score += 1
                     objects.remove(object)
             elif object[0] <= 0:
                 print "game over"
@@ -51,7 +51,7 @@ def updateObjects():
 
 def drawScore():
     print score
-    scoreText=font.render(score, 1,(255,0,0))
+    scoreText=font.render(str(score), 1,(255,0,0))
     screen.blit(scoreText, (350, 100))
 
 # The actual game
