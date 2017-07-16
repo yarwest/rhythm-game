@@ -1,4 +1,5 @@
 import pygame
+from endless import EndlessController
 
 # Initialize pygame and open a display
 pygame.init()
@@ -12,6 +13,7 @@ buttons = [[30,30,"Endless Mode"],[30,100,"Options"],[30,170,"Exit to Desktop"]]
 buttonWidth = 180
 buttonHeight = 60
 done = False
+controller = EndlessController(screen, font)
 
 def initMainMenuButtons():
     screen.fill((0,0,0))
@@ -38,7 +40,7 @@ while not done:
                 if event.pos[0] >= button[0] and event.pos[0] <= button[0]+buttonWidth and event.pos[1] >= button[1] and event.pos[1] <= button[1]+buttonHeight:
                     #currentColor = 1 if currentColor==0 else 0
                     if button[2] == "Endless Mode":
-                        import endless
+                        controller.play()
                     elif button[2] == "Options":
                         print "options"
                     elif button[2] == "Exit to Desktop":
