@@ -7,13 +7,14 @@ screen = pygame.display.set_mode((750,500)#, pygame.FULLSCREEN, 16
 
 # A few variables to Initialize the menu
 font=pygame.font.Font(None,30)
-color = (0, 128, 255)
+color = (153, 0, 0)
 buttons = [[30,30,"Endless Mode"],[30,100,"Options"],[30,170,"Exit to Desktop"]]
 buttonWidth = 180
 buttonHeight = 60
 done = False
 
 def initMainMenuButtons():
+    screen.fill((0,0,0))
     for button in buttons:
         pygame.draw.rect(screen, color, pygame.Rect(button[0], button[1], buttonWidth, buttonHeight))
         buttonText=font.render(button[2], 1,(0,0,0))
@@ -27,9 +28,8 @@ def quitGame():
 #pygame.mixer.music.load("audio/music/main-music.mp3")
 #pygame.mixer.music.play(-1)
 
-initMainMenuButtons()
-
 while not done:
+    initMainMenuButtons()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quitGame()
@@ -38,7 +38,7 @@ while not done:
                 if event.pos[0] >= button[0] and event.pos[0] <= button[0]+buttonWidth and event.pos[1] >= button[1] and event.pos[1] <= button[1]+buttonHeight:
                     #currentColor = 1 if currentColor==0 else 0
                     if button[2] == "Endless Mode":
-                        print "endless"
+                        import endless
                     elif button[2] == "Options":
                         print "options"
                     elif button[2] == "Exit to Desktop":
