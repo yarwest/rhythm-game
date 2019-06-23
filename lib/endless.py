@@ -1,4 +1,3 @@
-
 import pygame
 from random import randrange
 class EndlessController:
@@ -54,7 +53,7 @@ class EndlessController:
                             self.score += 1
                             self.objects.remove(obj)
                     if obj[0] <= 0:
-                        print "game over"
+                        print("game over")
                         self.objects.remove(obj)
                         self.done = True
                 self.deltaTime -= self.timeThreshold
@@ -86,7 +85,7 @@ class EndlessController:
         # Update the display with everything that has been drawn
         pygame.display.flip()
 
-    def play(self):
+    def init(self):
         # Storing the objects on the lines
         self.objects = []
         # A few variables for tracking the score, timedifference, score, etc.
