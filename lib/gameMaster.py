@@ -18,8 +18,6 @@ class GameMaster:
         self.font = pygame.font.Font(None,30)
         
         self.uiController = UIController(self.screen, self.font)
-        self.eventWatcher = EventWatcher()
-        self.eventWatcher.watch(self.uiController)
 
     @staticmethod
     def quitGame():
@@ -30,6 +28,8 @@ class GameMaster:
     def mainMenu(self):
         controller = MainMenuController(self)
         controller.init(self.font)
+
+        EventWatcher.watch()
 
     def playEndless(self):
         controller = EndlessController(self.screen, self.font)
@@ -47,16 +47,21 @@ class EventWatcher:
     def subscribe(subscriber):
         EventWatcher.subscribers.append(subscriber)
 
-    def watch(self, uiController):
+    @staticmethod
+    def unsubscribe(subscriber):
+        EventWatcher.subscribers.remove(subscriber)
+
+    @staticmethod
+    def watch():
         global done
         done = False
         while not done:
-            uiController.draw()
+            UIController.draw()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     GameMaster.quitGame()
                 else:
-                    for subscriber in self.subscribers:
+                    for subscriber in EventWatcher.subscribers:
                         subscriber.receiveEvent(event)
                 pygame.display.flip()
 
@@ -70,7 +75,7 @@ class MainMenuController:
         #pygame.mixer.music.load("audio/music/main-music.mp3")
         #pygame.mixer.music.play(-1)
         for button in self.buttons:
-            UIController.registerDrawable(Button(button[0], button[1], button[2], (0,0,0), font))
+            UIController.registerDrawable('main_menu', Button(button[0], button[1], button[2], (0,0,0), font))
         EventWatcher.subscribe(self)
 
     def receiveEvent(self, event):
@@ -78,13 +83,17 @@ class MainMenuController:
             for button in self.buttons:
                 if event.pos[0] >= button[0] and event.pos[0] <= button[0] + 180 and event.pos[1] >= button[1] and event.pos[1] <= button[1] + 60:
                     #currentColor = 1 if currentColor==0 else 0
+                    self.selfDestruct()
                     if button[2] == "Endless Mode":
                         self.gameMaster.playEndless()
                     elif button[2] == "Options":
                         self.gameMaster.options()
                     elif button[2] == "Exit to Desktop":
                         GameMaster.quitGame()
-
+    
+    def selfDestruct(self):
+        UIController.removeByLabel("main_menu")
+        EventWatcher.unsubscribe(self)
 
 class OptionsController:
     def __init__(self, gameMaster):
@@ -93,16 +102,20 @@ class OptionsController:
     def init(self, font):
         for i in range(4):
             buttonY = 30 + (70*i)
-            UIController.registerDrawable(Text(30, buttonY + 20, "Button " + str(i + 1), (255,255,255), font))
-            UIController.registerDrawable(Button(120, buttonY, str(self.gameMaster.controls[i]), (0,0,0), font))
+            UIController.registerDrawable('options_menu', Text(30, buttonY + 20, "Button " + str(i + 1), (255,255,255), font))
+            UIController.registerDrawable('options_menu', Button(130, buttonY, str(self.gameMaster.controls[i]), (0,0,0), font))
         EventWatcher.subscribe(self)
 
     def receiveEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             for i in range(4):
                 buttonY = 30 + (70*i)
-                if event.pos[0] >= 120 and event.pos[0] <= 120 + 180 and event.pos[1] >= buttonY and event.pos[1] <= buttonY + 60:
+                if event.pos[0] >= 130 and event.pos[0] <= 130 + 180 and event.pos[1] >= buttonY and event.pos[1] <= buttonY + 60:
                     self.changeButton(i)
 
     def changeButton(self, index):
         print("changing button " + str(index))
+
+    def selfDestruct(self):
+        UIController.removeByLabel("options_menu")
+        EventWatcher.unsubscribe(self)

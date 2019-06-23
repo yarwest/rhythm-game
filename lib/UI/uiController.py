@@ -1,18 +1,26 @@
 import pygame
 class UIController:
-    drawables = []
+    drawables = {}
     
     def __init__(self, screen, font):
         # TODO: later make own screen and font
-        self.screen = screen
-        self.font = font
+        UIController.screen = screen
+        UIController.font = font
 
 
     @staticmethod
-    def registerDrawable(drawable):
-        UIController.drawables.append(drawable)
+    def registerDrawable(label, drawable):
+        if(label not in UIController.drawables):
+            UIController.drawables[label] = []
+        UIController.drawables[label].append(drawable)
 
-    def draw(self):
-        self.screen.fill((0,0,0))
-        for drawable in self.drawables:
-            drawable.draw(self.screen)
+    @staticmethod
+    def removeByLabel(label):
+        del UIController.drawables[label]
+
+    @staticmethod
+    def draw():
+        UIController.screen.fill((0,0,0))
+        for label, drawables in UIController.drawables.items():
+            for drawable in drawables:
+                drawable.draw(UIController.screen)
