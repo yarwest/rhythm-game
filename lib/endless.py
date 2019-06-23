@@ -1,5 +1,10 @@
 import pygame
 from random import randrange
+from . import gameMaster
+from .UI import UIController
+from .UI import Text
+from .UI import Rect
+
 class EndlessController:
     # Number of lines on the screen
     linesNo = 4
@@ -26,40 +31,46 @@ class EndlessController:
     timeThreshold = 5
     clock = pygame.time.Clock()
 
-    def __init__(self, screen, font):
-        self.screen = screen
+    def __init__(self, font, gameMasterInstance):
         self.font = font
+        self.gameMasterInstance = gameMasterInstance
 
     # Function responsible for drawing all the lines on the designated locations
     def drawLines(self):
         for i in range(self.linesNo):
             y = (self.yOffset-(self.lineHeight/2)) + (self.lineOffset * i)
-            pygame.draw.rect(self.screen, (255,255,255), pygame.Rect(0, y, 750, self.lineHeight))
+            UIController.registerDrawable('game_lines', Rect(0, y, 750, self.lineHeight, (255,255,255)))
 
     # Function for drawing the player in his spot
-    def drawPlayer(self):
+    def updatePlayer(self):
+        UIController.removeByLabel('game_player')
         y = (self.yOffset-(self.playerHeight/2)) + (self.lineOffset * self.playerPosition)
-        pygame.draw.rect(self.screen, (255,0,0), pygame.Rect((self.playerOffset-(self.playerWidth/2)),y,self.playerWidth,self.playerHeight))
+        UIController.registerDrawable('game_player', Rect(self.playerOffset-(self.playerWidth/2), y, self.playerWidth, self.playerHeight, (255,0,0)))
 
-    # Function for updating the position and drawing the objects on the lines
+    # Function for updating the position
     # Also responsible for adding new objects, tracking the score, and tracking the failure state
     def updateObjects(self):
         if self.objects:
             while self.deltaTime >= self.timeThreshold:
-                for obj in self.objects:
+                for i, obj in enumerate(self.objects):
                     obj[0] -= 1
                     if obj[0] <= self.playerOffset and obj[0] >= 30:
                         if self.playerPosition == obj[1]:
-                            self.score += 1
+                            self.updateScore(1)
                             self.objects.remove(obj)
                     if obj[0] <= 0:
                         print("game over")
-                        self.objects.remove(obj)
-                        self.done = True
+                        self.selfDestruct()
+                        return
                 self.deltaTime -= self.timeThreshold
-            for obj in self.objects:
+            UIController.removeByLabel('game_object_0')
+            UIController.removeByLabel('game_object_1')
+            UIController.removeByLabel('game_object_2')
+            UIController.removeByLabel('game_object_3')
+
+            for i, obj in enumerate(self.objects):
                 y = (self.yOffset-(self.playerHeight/2)) + (self.lineOffset * obj[1])
-                pygame.draw.rect(self.screen, self.colors[obj[1]], pygame.Rect(obj[0],y,self.playerHeight,self.playerHeight))
+                UIController.registerDrawable('game_object_' + str(i), Rect(obj[0], y, self.playerHeight, self.playerHeight, self.colors[obj[1]]))
         else:
             self.objects.extend((
                 [750,randrange(0, self.linesNo, 1)],
@@ -69,21 +80,10 @@ class EndlessController:
             ))
 
     # Function for drawing the score
-    def drawScore(self):
-        scoreText=self.font.render(str(self.score), 1,(255,0,0))
-        self.screen.blit(scoreText, (350, 100))
-
-    def updateScreen(self):
-        # Add the time difference to the time difference variable
-        self.deltaTime += self.clock.tick()
-        # Reset the background and call all the drawing functions
-        self.screen.fill((0,0,0))
-        self.drawLines()
-        self.drawPlayer()
-        self.updateObjects()
-        self.drawScore()
-        # Update the display with everything that has been drawn
-        pygame.display.flip()
+    def updateScore(self, difference):
+        self.score += difference
+        UIController.removeByLabel('game_current_score')
+        UIController.registerDrawable('game_current_score', Text(350, 100, str(self.score), (255, 0, 0), self.font))
 
     def init(self):
         # Storing the objects on the lines
@@ -92,21 +92,43 @@ class EndlessController:
         self.playerPosition = 0
         self.deltaTime = 0
         self.score = 0
-        self.done = False
-        while not self.done:
-            self.updateScreen()
-            # Handle every event that happens
-            for event in pygame.event.get():
-                # Finish the program when the game is being quit
-                if event.type == pygame.QUIT:
-                    self.done = True
-                # Update the players position based on the keyboard input
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        self.playerPosition = 0
-                    elif event.key == pygame.K_UP:
-                        self.playerPosition = 1
-                    elif event.key == pygame.K_RIGHT:
-                        self.playerPosition = 2
-                    elif event.key == pygame.K_DOWN:
-                        self.playerPosition = 3
+
+        self.drawLines()
+        self.updatePlayer()
+        self.updateScore(0)
+
+        gameMaster.EventWatcher.subscribeTicks(self)
+        gameMaster.EventWatcher.subscribeEvents(self)
+
+    def receiveTick(self):
+        self.deltaTime += self.clock.tick()
+        self.updateObjects()
+
+    def receiveEvent(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                self.playerPosition = 0
+                self.updatePlayer()
+            elif event.key == pygame.K_UP:
+                self.playerPosition = 1
+                self.updatePlayer()
+            elif event.key == pygame.K_RIGHT:
+                self.playerPosition = 2
+                self.updatePlayer()
+            elif event.key == pygame.K_DOWN:
+                self.playerPosition = 3
+                self.updatePlayer()
+
+    def selfDestruct(self):
+        UIController.removeByLabel('game_current_score')
+        UIController.removeByLabel('game_player')
+        UIController.removeByLabel('game_lines')
+        UIController.removeByLabel('game_object_0')
+        UIController.removeByLabel('game_object_1')
+        UIController.removeByLabel('game_object_2')
+        UIController.removeByLabel('game_object_3')
+
+        gameMaster.EventWatcher.unsubscribeEvents(self)
+        gameMaster.EventWatcher.unsubscribeTicks(self)
+
+        self.gameMasterInstance.mainMenu()

@@ -5,4 +5,3 @@ from lib import GameMaster
 pygame.init()
 
 gameMaster = GameMaster()
-gameMaster.mainMenu()

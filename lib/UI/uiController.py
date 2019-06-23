@@ -2,9 +2,10 @@ import pygame
 class UIController:
     drawables = {}
     
-    def __init__(self, screen, font):
-        # TODO: later make own screen and font
-        UIController.screen = screen
+    def __init__(self, font):
+        UIController.screen = pygame.display.set_mode((750,500)#, pygame.FULLSCREEN, 16
+            )
+
         UIController.font = font
 
 
@@ -16,7 +17,8 @@ class UIController:
 
     @staticmethod
     def removeByLabel(label):
-        del UIController.drawables[label]
+        if(label in UIController.drawables):
+            del UIController.drawables[label]
 
     @staticmethod
     def draw():

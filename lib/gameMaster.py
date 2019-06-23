@@ -3,21 +3,20 @@ from .endless import EndlessController
 from .UI import UIController
 from .UI import Button
 from .UI import Text
+
 class GameMaster:
-    
     controls = [pygame.K_LEFT, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN]
     
     def __init__(self):
         global done
         done = False
-
-        self.screen = pygame.display.set_mode((750,500)#, pygame.FULLSCREEN, 16
-            )
         
         pygame.font.init()
         self.font = pygame.font.Font(None,30)
         
-        self.uiController = UIController(self.screen, self.font)
+        self.uiController = UIController(self.font)
+        self.mainMenu()
+        EventWatcher.watch()
 
     @staticmethod
     def quitGame():
@@ -29,41 +28,50 @@ class GameMaster:
         controller = MainMenuController(self)
         controller.init(self.font)
 
-        EventWatcher.watch()
-
     def playEndless(self):
-        controller = EndlessController(self.screen, self.font)
+        controller = EndlessController(self.font, self)
         controller.init()
 
     def options(self):
         controller = OptionsController(self)
         controller.init(self.font)
-        print("options")
 
 class EventWatcher:
-    subscribers = []
+    eventSubscribers = []
+    tickSubscribers = []
 
     @staticmethod
-    def subscribe(subscriber):
-        EventWatcher.subscribers.append(subscriber)
+    def subscribeEvents(subscriber):
+        EventWatcher.eventSubscribers.append(subscriber)
+    
+    @staticmethod
+    def unsubscribeEvents(subscriber):
+        EventWatcher.eventSubscribers.remove(subscriber)
+    
+    @staticmethod
+    def subscribeTicks(subscriber):
+        EventWatcher.tickSubscribers.append(subscriber)
 
     @staticmethod
-    def unsubscribe(subscriber):
-        EventWatcher.subscribers.remove(subscriber)
+    def unsubscribeTicks(subscriber):
+        EventWatcher.tickSubscribers.remove(subscriber)
 
     @staticmethod
     def watch():
         global done
         done = False
         while not done:
+            for subscriber in EventWatcher.tickSubscribers:
+                subscriber.receiveTick()
             UIController.draw()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     GameMaster.quitGame()
                 else:
-                    for subscriber in EventWatcher.subscribers:
+                    for subscriber in EventWatcher.eventSubscribers:
                         subscriber.receiveEvent(event)
-                pygame.display.flip()
+            pygame.display.flip()
 
 class MainMenuController:
     buttons = [[30,30,"Endless Mode"],[30,100,"Options"],[30,170,"Exit to Desktop"]]
@@ -76,7 +84,7 @@ class MainMenuController:
         #pygame.mixer.music.play(-1)
         for button in self.buttons:
             UIController.registerDrawable('main_menu', Button(button[0], button[1], button[2], (0,0,0), font))
-        EventWatcher.subscribe(self)
+        EventWatcher.subscribeEvents(self)
 
     def receiveEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -93,7 +101,7 @@ class MainMenuController:
     
     def selfDestruct(self):
         UIController.removeByLabel("main_menu")
-        EventWatcher.unsubscribe(self)
+        EventWatcher.unsubscribeEvents(self)
 
 class OptionsController:
     def __init__(self, gameMaster):
@@ -104,7 +112,7 @@ class OptionsController:
             buttonY = 30 + (70*i)
             UIController.registerDrawable('options_menu', Text(30, buttonY + 20, "Button " + str(i + 1), (255,255,255), font))
             UIController.registerDrawable('options_menu', Button(130, buttonY, str(self.gameMaster.controls[i]), (0,0,0), font))
-        EventWatcher.subscribe(self)
+        EventWatcher.subscribeEvents(self)
 
     def receiveEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -118,4 +126,4 @@ class OptionsController:
 
     def selfDestruct(self):
         UIController.removeByLabel("options_menu")
-        EventWatcher.unsubscribe(self)
+        EventWatcher.unsubscribeEvents(self)
