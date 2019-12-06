@@ -14,7 +14,7 @@ class GameMaster:
         pygame.font.init()
         self.font = pygame.font.Font(None,30)
         
-        self.uiController = UIController(self.font)
+        UIController(self.font)
         self.mainMenu()
         EventWatcher.watch()
 
@@ -80,8 +80,8 @@ class MainMenuController:
         self.gameMaster = gameMaster
 
     def init(self, font):
-        #pygame.mixer.music.load("audio/music/main-music.mp3")
-        #pygame.mixer.music.play(-1)
+        pygame.mixer.music.load("audio/music/main-music.ogg")
+        pygame.mixer.music.play(-1)
         for button in self.buttons:
             UIController.registerDrawable('main_menu', Button(button[0], button[1], button[2], (0,0,0), font))
         EventWatcher.subscribeEvents(self)
