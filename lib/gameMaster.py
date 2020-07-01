@@ -8,9 +8,6 @@ class GameMaster:
     controls = [pygame.K_LEFT, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN]
     
     def __init__(self):
-        global done
-        done = False
-        
         pygame.font.init()
         self.font = pygame.font.Font(None,30)
         
